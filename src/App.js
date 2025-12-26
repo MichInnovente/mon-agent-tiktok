@@ -40,7 +40,7 @@ export default function SocialContentAgents() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [showWebhookSetup, setShowWebhookSetup] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState('');
+ const [webhookUrl, setWebhookUrl] = useState('https://hook.eu1.make.com/khnu3q4f4e7djqx2kj9yqyu9rqsk0lc8');
   const [webhookSaved, setWebhookSaved] = useState(false);
 
   const [newAgent, setNewAgent] = useState({

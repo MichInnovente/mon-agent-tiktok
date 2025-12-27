@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Send, Loader2 } from 'lucide-react';
 
-// Ton URL Sheety est parfaite ici
+// Ton URL Sheety (ne pas modifier)
 const SHEET_API_URL = "https://api.sheety.co/28a36bcc8636c5dd4cb7a975b4dd83b0/scriptsTikTokIa/agents"; 
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
       try {
         const response = await fetch(SHEET_API_URL);
         const data = await response.json();
-        // CORRECTION : On accède à data.agents car Sheety crée un objet avec le nom de l'onglet
+        // Correction : On accède à data.agents pour éviter la page blanche
         if (data && data.agents) {
           setAgents(data.agents);
         }
@@ -81,7 +82,7 @@ function App() {
               </button>
             ))
           ) : (
-            <p className="col-span-3 text-center text-gray-500 italic">Chargement des agents...</p>
+            <p className="col-span-3 text-center text-gray-500 italic">Chargement des agents depuis le Sheets...</p>
           )}
         </div>
 

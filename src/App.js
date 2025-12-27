@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Send, Loader2 } from 'lucide-react';
 
-// URL CORRIGÉE : Utilise bien le "l" minuscule de ton Sheety
+// 1. URL CORRIGÉE (avec le "l" de "la" à la fin de scriptsTikTokla)
 const SHEET_API_URL = "https://api.sheety.co/28a36bcc8636c5dd4cb7a975b4dd83b0/scriptsTikTokla/agents"; 
 
 function App() {
@@ -11,10 +11,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
+  // Charger les agents depuis Google Sheets
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        // Le paramètre ?cache aide à forcer la mise à jour des agents
         const response = await fetch(`${SHEET_API_URL}?cache=${Math.random()}`);
         const data = await response.json();
         if (data && data.agents && Array.isArray(data.agents)) {
@@ -33,7 +33,7 @@ function App() {
     setResult(null);
     
     try {
-      // Envoi vers ton Webhook Make avec le mode no-cors pour éviter les erreurs réseau
+      // 2. ENVOI FORCÉ (mode no-cors pour ignorer le blocage de sécurité de la console)
       await fetch("https://hook.eu1.make.com/khnu3q4f4e7djqx2kj9yqyu9rqsk0l", {
         method: "POST",
         mode: "no-cors", 
@@ -46,8 +46,8 @@ function App() {
         })
       });
 
-      // Confirmation d'envoi
-      setResult("✅ Signal envoyé à Make ! Vérifie ton Google Sheets.");
+      // 3. MESSAGE DE SUCCÈS AUTOMATIQUE
+      setResult("✅ Signal envoyé avec succès ! Vérifie ton Google Sheets.");
       setPrompt('');
     } catch (error) {
       setResult("❌ Erreur lors de l'envoi.");
@@ -66,7 +66,7 @@ function App() {
           <p className="text-gray-600 mt-2 italic">Piloté par votre Google Sheets</p>
         </header>
 
-        {/* Section des Agents */}
+        {/* Liste des Agents */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           {agents.length > 0 ? (
             agents.map((agent, index) => (
@@ -100,7 +100,7 @@ function App() {
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Ex: 5 astuces pour sécuriser son compte TikTok..."
+            placeholder="Ex: 5 astuces pour gagner du temps avec l'IA..."
             className="w-full h-40 p-4 border border-gray-200 rounded-xl mb-4 focus:ring-2 focus:ring-purple-500 outline-none transition-all resize-none"
           />
           <button
@@ -113,7 +113,6 @@ function App() {
           </button>
         </div>
 
-        {/* Message de résultat */}
         {result && (
           <div className={`mt-8 p-6 rounded-2xl text-center font-medium shadow-sm ${
             result.includes('✅') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Send, Loader2, Database } from 'lucide-react';
 
 // REMPLACE PAR TON URL DE PUBLICATION (VOIR ÉTAPE CI-DESSOUS)
-const SHEET_API_URL = "TA_PROPRE_URL_ICI"; 
+const SHEET_API_URL = "https://api.sheety.co/28a36bcc8636c5dd4cb7a975b4dd83b0/scriptsTikTokIa/agents"; 
 
 function App() {
   const [agents, setAgents] = useState([]);

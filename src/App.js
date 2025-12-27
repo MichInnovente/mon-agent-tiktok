@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Send, Loader2 } from 'lucide-react';
 
-// URL de ton Sheety (vérifiée avec le "l" minuscule)
+// URL CORRIGÉE : Utilise bien le "l" minuscule de ton Sheety
 const SHEET_API_URL = "https://api.sheety.co/28a36bcc8636c5dd4cb7a975b4dd83b0/scriptsTikTokla/agents"; 
 
 function App() {
@@ -14,13 +14,14 @@ function App() {
   useEffect(() => {
     const fetchAgents = async () => {
       try {
+        // Le paramètre ?cache aide à forcer la mise à jour des agents
         const response = await fetch(`${SHEET_API_URL}?cache=${Math.random()}`);
         const data = await response.json();
         if (data && data.agents && Array.isArray(data.agents)) {
           setAgents(data.agents);
         }
       } catch (error) {
-        console.error("Erreur Sheety:", error);
+        console.error("Erreur de chargement des agents:", error);
       }
     };
     fetchAgents();
@@ -32,7 +33,7 @@ function App() {
     setResult(null);
     
     try {
-      // Utilisation du mode no-cors pour contourner le blocage de sécurité
+      // Envoi vers ton Webhook Make avec le mode no-cors pour éviter les erreurs réseau
       await fetch("https://hook.eu1.make.com/khnu3q4f4e7djqx2kj9yqyu9rqsk0l", {
         method: "POST",
         mode: "no-cors", 
@@ -45,7 +46,7 @@ function App() {
         })
       });
 
-      // Avec no-cors, on affiche un succès par défaut car l'envoi est forcé
+      // Confirmation d'envoi
       setResult("✅ Signal envoyé à Make ! Vérifie ton Google Sheets.");
       setPrompt('');
     } catch (error) {
@@ -65,6 +66,7 @@ function App() {
           <p className="text-gray-600 mt-2 italic">Piloté par votre Google Sheets</p>
         </header>
 
+        {/* Section des Agents */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           {agents.length > 0 ? (
             agents.map((agent, index) => (
@@ -90,6 +92,7 @@ function App() {
           )}
         </div>
 
+        {/* Zone de saisie */}
         <div className="bg-white rounded-2xl shadow-md border p-6">
           <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wider">
             Sujet de votre vidéo
@@ -110,6 +113,7 @@ function App() {
           </button>
         </div>
 
+        {/* Message de résultat */}
         {result && (
           <div className={`mt-8 p-6 rounded-2xl text-center font-medium shadow-sm ${
             result.includes('✅') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'

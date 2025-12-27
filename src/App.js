@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Send, Loader2, Database } from 'lucide-react';
+import { Sparkles, Send, Loader2 } from 'lucide-react';
 
-// REMPLACE PAR TON URL DE PUBLICATION (VOIR ÉTAPE CI-DESSOUS)
+// Ton URL Sheety est parfaite ici
 const SHEET_API_URL = "https://api.sheety.co/28a36bcc8636c5dd4cb7a975b4dd83b0/scriptsTikTokIa/agents"; 
 
 function App() {
@@ -17,8 +17,10 @@ function App() {
       try {
         const response = await fetch(SHEET_API_URL);
         const data = await response.json();
-        // On transforme les lignes du Sheets en objets agents
-        setAgents(data);
+        // CORRECTION : On accède à data.agents car Sheety crée un objet avec le nom de l'onglet
+        if (data && data.agents) {
+          setAgents(data.agents);
+        }
       } catch (error) {
         console.error("Erreur de chargement des agents:", error);
       }
@@ -31,14 +33,13 @@ function App() {
     setLoading(true);
     
     try {
-      // Ton lien Webhook Make que l'on a configuré ensemble
       const response = await fetch("https://hook.eu1.make.com/khnu3q4f4e7djqx2kj9yqyu9rqsk0l", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           agentName: selectedAgent.name,
           title: prompt,
-          script: "Génération en cours...", // L'IA remplacera ceci via Make
+          script: "Génération en cours...",
           timestamp: new Date().toISOString()
         })
       });
@@ -64,20 +65,24 @@ function App() {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {agents.map((agent) => (
-            <button
-              key={agent.id}
-              onClick={() => setSelectedAgent(agent)}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                selectedAgent?.id === agent.id 
-                ? 'border-purple-600 bg-purple-50' 
-                : 'border-white bg-white hover:border-purple-200'
-              }`}
-            >
-              <span className="text-3xl mb-2 block">{agent.icon}</span>
-              <span className="font-semibold">{agent.name}</span>
-            </button>
-          ))}
+          {agents.length > 0 ? (
+            agents.map((agent, index) => (
+              <button
+                key={agent.id || index}
+                onClick={() => setSelectedAgent(agent)}
+                className={`p-4 rounded-xl border-2 transition-all ${
+                  selectedAgent?.id === agent.id 
+                  ? 'border-purple-600 bg-purple-50' 
+                  : 'border-white bg-white hover:border-purple-200'
+                }`}
+              >
+                <span className="text-3xl mb-2 block">{agent.icon}</span>
+                <span className="font-semibold">{agent.name}</span>
+              </button>
+            ))
+          ) : (
+            <p className="col-span-3 text-center text-gray-500 italic">Chargement des agents...</p>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border p-6">
@@ -98,7 +103,7 @@ function App() {
         </div>
 
         {result && (
-          <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-2xl text-green-700">
+          <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-2xl text-green-700 text-center">
             {result}
           </div>
         )}

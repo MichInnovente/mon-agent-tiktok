@@ -1,76 +1,107 @@
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Send, Loader2, Database } from 'lucide-react';
 
-import React, { useState } from 'react';
+// REMPLACE PAR TON URL DE PUBLICATION (VOIR ÉTAPE CI-DESSOUS)
+const SHEET_API_URL = "TA_PROPRE_URL_ICI"; 
 
 function App() {
-  const [agents, setAgents] = useState([
-    { id: 1, name: 'Agent Humour', topic: 'Les chats' },
-    { id: 2, name: 'Agent Business', topic: 'Le Bitcoin' }
-  ]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState('https://hook.eu1.make.com/khnu3q4f4e7djqx2kj9yqyu9rqsk0lc8');
+  const [agents, setAgents] = useState([]);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [prompt, setPrompt] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
 
-  const generateWithAI = async () => {
-    setIsGenerating(true);
-    
-    // On récupère ta clé cachée dans Vercel
-    const apiKey = process.env.REACT_APP_GROQ_API_KEY;
-
-    for (const agent of agents) {
+  // Charger les agents depuis Google Sheets au démarrage
+  useEffect(() => {
+    const fetchAgents = async () => {
       try {
-        // 1. Appel à l'IA (Groq)
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: "llama3-8b-8192",
-            messages: [
-              { role: "system", content: `Tu es ${agent.name}. Rédige un script TikTok court et viral.` },
-              { role: "user", content: `Sujet : ${agent.topic}` }
-            ]
-          })
-        });
-
+        const response = await fetch(SHEET_API_URL);
         const data = await response.json();
-        const aiScript = data.choices[0].message.content;
-
-        // 2. Envoi vers Make.com
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            agentName: agent.name,
-            topic: agent.topic,
-            script: aiScript,
-            date: new Date().toISOString()
-          })
-        });
-
+        // On transforme les lignes du Sheets en objets agents
+        setAgents(data);
       } catch (error) {
-        console.error("Erreur avec l'agent " + agent.name, error);
+        console.error("Erreur de chargement des agents:", error);
       }
-    }
+    };
+    fetchAgents();
+  }, []);
+
+  const handleGenerate = async () => {
+    if (!selectedAgent || !prompt) return;
+    setLoading(true);
     
-    setIsGenerating(false);
-    alert("Tous les scripts ont été générés par l'IA et envoyés à Make !");
+    try {
+      // Ton lien Webhook Make que l'on a configuré ensemble
+      const response = await fetch("https://hook.eu1.make.com/khnu3q4f4e7djqx2kj9yqyu9rqsk0l", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agentName: selectedAgent.name,
+          title: prompt,
+          script: "Génération en cours...", // L'IA remplacera ceci via Make
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      if (response.ok) {
+        setResult("Script généré et envoyé vers Google Sheets !");
+      }
+    } catch (error) {
+      setResult("Erreur lors de l'envoi vers Make.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>Mon Générateur de Scripts IA</h1>
-      <button 
-        onClick={generateWithAI} 
-        disabled={isGenerating}
-        style={{ padding: '10px 20px', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
-      >
-        {isGenerating ? 'IA en cours de rédaction...' : '🚀 Générer avec la vraie IA'}
-      </button>
-      
-      <div style={{ marginTop: '20px' }}>
-        <h3>Agents actifs :</h3>
-        {agents.map(a => <p key={a.id}>✅ {a.name} (Sujet: {a.topic})</p>)}
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 flex items-center justify-center gap-2">
+            <Sparkles className="text-purple-600" /> Générateur TikTok Pro
+          </h1>
+          <p className="text-gray-600 mt-2">Piloté par Google Sheets</p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {agents.map((agent) => (
+            <button
+              key={agent.id}
+              onClick={() => setSelectedAgent(agent)}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                selectedAgent?.id === agent.id 
+                ? 'border-purple-600 bg-purple-50' 
+                : 'border-white bg-white hover:border-purple-200'
+              }`}
+            >
+              <span className="text-3xl mb-2 block">{agent.icon}</span>
+              <span className="font-semibold">{agent.name}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border p-6">
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="De quoi doit parler le script ?"
+            className="w-full h-32 p-4 border rounded-xl mb-4 focus:ring-2 focus:ring-purple-500 outline-none"
+          />
+          <button
+            onClick={handleGenerate}
+            disabled={loading || !selectedAgent}
+            className="w-full bg-purple-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-purple-700 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="animate-spin" /> : <Send size={20} />}
+            Générer avec la vraie IA
+          </button>
+        </div>
+
+        {result && (
+          <div className="mt-8 p-6 bg-green-50 border border-green-200 rounded-2xl text-green-700">
+            {result}
+          </div>
+        )}
       </div>
     </div>
   );
